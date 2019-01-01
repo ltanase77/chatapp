@@ -2,26 +2,21 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socket = require('socket.io');
-const publicPath = path.join(__dirname, '/../public')
+const publicPath = path.join(__dirname, '/../public');
+const {generateMessage} = require('./utils/message');
 const app = express();
-var server = http.createServer(app);
-var io = socket(server);
+const server = http.createServer(app);
+const io = socket(server);
 
 io.on('connection', function(socket) {
     console.log('New user connected');
-    socket.emit('newMessage', {
-        from: "Admin",
-        text: "Welcome to the chat app",
-        createdAt: new Date().getTime(),
-    })
-    socket.broadcast.emit('newMessage', {
-        from: 'Admin',
-        text: 'New user joined the chat',
-        createdAt: new Date().getTime(),
-    })
+    socket.emit('newMessage', generateMessage("Admin", "Welcome to the chat app"));
+
+    socket.broadcast.emit('newMessage', generateMessage("Admin", "New user joined the chat"));
+
     socket.on('disconnect', function() {
         console.log('Client has disconnected from server!');
-    })
+    });
 
     /* socket.emit('newMessage', {
         from: "Riddick",
@@ -31,11 +26,7 @@ io.on('connection', function(socket) {
 
     socket.on('createMessage', function(newMsg) {
         console.log('createMessage', newMsg);
-        io.emit('newMessage', {
-            from: newMsg.from,
-            text: newMsg.text,
-            createdAt: new Date().getTime(),
-        });
+        io.emit('newMessage', generateMessage(newMsg.from, newMsg.text));
         /* socket.broadcast.emit('newMessage',{
             from: newMsg.from,
             text: newMsg.text,
@@ -46,8 +37,8 @@ io.on('connection', function(socket) {
 
 const port = process.env.PORT || 3000;
 
- app.use(express.static(publicPath));
+app.use(express.static(publicPath));
 
- server.listen(port, function() {
-     console.log(`Server started on port ${port}`);
- })
+server.listen(port, function() {
+    console.log(`Server started on port ${port}`);
+});
