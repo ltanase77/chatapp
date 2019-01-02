@@ -24,9 +24,10 @@ io.on('connection', function(socket) {
         createdAt: new Date(),
     }); */
 
-    socket.on('createMessage', function(newMsg) {
+    socket.on('createMessage', function(newMsg, callback) {
         console.log('createMessage', newMsg);
         io.emit('newMessage', generateMessage(newMsg.from, newMsg.text));
+        callback('This is from the server');
         /* socket.broadcast.emit('newMessage',{
             from: newMsg.from,
             text: newMsg.text,
