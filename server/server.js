@@ -3,7 +3,7 @@ const http = require('http');
 const express = require('express');
 const socket = require('socket.io');
 const publicPath = path.join(__dirname, '/../public');
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocation} = require('./utils/message');
 const app = express();
 const server = http.createServer(app);
 const io = socket(server);
@@ -33,6 +33,10 @@ io.on('connection', function(socket) {
             text: newMsg.text,
             createdAt: new Date().getTime(),
         }); */
+    });
+
+    socket.on('createLocationMsg', function(coords) {
+        io.emit('newLocationMessage', generateLocation('Admin', coords.lat, coords.long));
     });
 });
 
