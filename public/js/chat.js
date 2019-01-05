@@ -1,24 +1,42 @@
 const socket = io();
-socket.on('connect', function() {
-    console.log('Connected to the server.');
+
+function scrollToBottom() {
+    // Selectors
+    const messages = $("#messages");
+    const newMessage = messages.children("li:last-child");
+    // Heights
+    const clientHeight = messages.prop("clientHeight");
+    const scrollTop = messages.prop("scrollTop");
+    const scrollHeight = messages.prop("scrollHeight");
+    const newMessageHeight = newMessage.innerHeight();
+    const lastMessageHeight = newMessage.prev().innerHeight();
+
+    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight);
+    }
+}
+
+socket.on("connect", function() {
+    console.log("Connected to the server.");
     /* socket.emit('createMessage', {
         from: "Zamol",
         text: "Hi! What's up guys!",
     }) */
 });
-socket.on('disconnect', function() {
-    console.log('Disconnected from server!');
+socket.on("disconnect", function() {
+    console.log("Disconnected from server!");
 });
 
-socket.on('newMessage', function(msg) {
-    const formattedTime = moment(msg.createdAt).format('h:mm a');
-    const template = $('#message-template').html();
+socket.on("newMessage", function(msg) {
+    const formattedTime = moment(msg.createdAt).format("h:mm a");
+    const template = $("#message-template").html();
     const html = Mustache.render(template, {
         text: msg.text,
         from: msg.from,
         createdAt: formattedTime,
     });
-    $('#messages').append(html);
+    $("#messages").append(html);
+    scrollToBottom();
     /* console.log('New message received', msg);
     const li = $("<li></li>");
     li.text(`${msg.from} ${formattedTime}: ${msg.text}`);
@@ -29,15 +47,16 @@ socket.on('newMessage', function(msg) {
     console.log('Got it', data);
 }); */
 
-socket.on('newLocationMessage', function(message) {
-    const formattedTime = moment(message.createdAt).format('h:mm a');
-    const template = $('#location-template').html();
+socket.on("newLocationMessage", function(message) {
+    const formattedTime = moment(message.createdAt).format("h:mm a");
+    const template = $("#location-template").html();
     const html = Mustache.render(template, {
         from: message.from,
         url: message.url,
         createdAt: formattedTime,
     });
-    $('#messages').append(html);
+    $("#messages").append(html);
+    scrollToBottom();
     /* const li = $("<li></li>");
     const a = $('<a target="_blank">My Current Location</a>');
     li.text(`${message.from} ${formattedTime}: `);
@@ -48,30 +67,36 @@ socket.on('newLocationMessage', function(message) {
 
 $("#message-form").on("submit", function(event) {
     event.preventDefault();
-    let textBox = $("[name=message]");
-    socket.emit("createMessage", {
-        from: "User",
-        text: textBox.val(),
-    }, function() {
-        textBox.val('');
-    });
+    const textBox = $("[name=message]");
+    socket.emit(
+        "createMessage",
+        {
+            from: "User",
+            text: textBox.val(),
+        },
+        function() {
+            textBox.val("");
+        }
+    );
 });
 
 const locationBtn = $("#location");
 locationBtn.on("click", function() {
     if (!navigator.geolocation) {
-        return alert('Geolocation is not supported by uour browser');
+        return alert("Geolocation is not supported by uour browser");
     }
-    locationBtn.attr("disabled", "disabled").text('Sending Location ...');
-    navigator.geolocation.getCurrentPosition(function(position) {
-        socket.emit('createLocationMsg', {
-            lat: position.coords.latitude,
-            long: position.coords.longitude,
-        });
-        locationBtn.removeAttr("disabled").text('Send Location');
-    }, function() {
-        alert('Unable to fetch your location');
-        locationBtn.removeAttr("disabled").text('Send Location');
-    });
+    locationBtn.attr("disabled", "disabled").text("Sending Location ...");
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            socket.emit("createLocationMsg", {
+                lat: position.coords.latitude,
+                long: position.coords.longitude,
+            });
+            locationBtn.removeAttr("disabled").text("Send Location");
+        },
+        function() {
+            alert("Unable to fetch your location");
+            locationBtn.removeAttr("disabled").text("Send Location");
+        }
+    );
 });
-

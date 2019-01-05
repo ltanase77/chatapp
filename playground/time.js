@@ -9,4 +9,4 @@ console.log(date.format('MMM Do, YYYY')); */
 // Time format 15:34 pm
 const someTimeStamp = moment().valueOf();
 console.log(someTimeStamp);
-console.log(date.format('h:mm a'))
+console.log(date.format('h:mm a'));
