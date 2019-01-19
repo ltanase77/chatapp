@@ -18,6 +18,15 @@ function scrollToBottom() {
 
 socket.on("connect", function() {
     console.log("Connected to the server.");
+    const params = $.deparam(window.location.search);
+    socket.emit("join", params, function(error) {
+        if (error) {
+            alert(error);
+            window.location.href = "/";
+        } else {
+            console.log("No error");
+        }
+    });
     /* socket.emit('createMessage', {
         from: "Zamol",
         text: "Hi! What's up guys!",
@@ -25,6 +34,14 @@ socket.on("connect", function() {
 });
 socket.on("disconnect", function() {
     console.log("Disconnected from server!");
+});
+
+socket.on("updateUserList", function(users) {
+    const ol = $("<ol></ol>");
+    users.forEach(function(user) {
+        ol.append($("<li></li>").text(user));
+        $("#users").html(ol);
+    });
 });
 
 socket.on("newMessage", function(msg) {
